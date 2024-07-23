@@ -1,0 +1,73 @@
+<!-- 
+You can use OS_Regex or PCRE2 based on which one do you prefer more
+
+Example:
+
+**Phase 1: Completed pre-decoding.
+        timestamp: 'Jul 22 22:22:22'
+        hostname: 'Caddy'
+        program_name: 'Caddy'
+
+**Phase 2: Completed decoding.
+        name: 'Caddy'
+        client_ip: '11.123.33.45'
+        dsthost: 'caddy.site.com'
+        duration: '0.000017'
+        id: '200'
+        method: 'GET'
+        protocol: 'HTTP/2.0'
+        referer: 'https://caddy.site.com/'
+        size: '0'
+        srcip: '88.66.66.66'
+        srcport: '66666'
+        srcuser: ''
+        url: '/favicon.ico'
+        user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0'
+
+**Phase 3: Completed filtering (rules).
+        id: '31108'
+        level: '0'
+        description: 'Ignored URLs (simple queries).'
+        groups: '['web', 'accesslog']'
+        firedtimes: '1'
+        mail: 'False'
+-->
+
+<decoder name="Caddy">
+  <program_name>Caddy</program_name>
+  <type>web-log</type>
+</decoder>
+
+<decoder name="CaddyFields">
+  <parent>Caddy</parent>
+  <type>web-log</type>
+  <!--  
+  <regex type="pcre2">"remote_ip":"(\d+\.\d+\.\d+\.\d+)","remote_port":"(\d+)","client_ip":"(\d+\.\d+\.\d+\.\d+)","proto":"(.+)","method":"(\w+)","host":"(.+)","uri":"(.*)","headers"</regex>
+  -->
+  <regex>"remote_ip":"(\d+.\d+.\d+.\d+)","remote_port":"(\d+)","client_ip":"(\d+.\d+.\d+.\d+)","proto":"(\.+)","method":"(\w+)","host":"(\.+)","uri":"(\.*)","headers"</regex>
+  <order>srcip, srcport, client_ip, protocol, method, dsthost, url</order>
+</decoder>
+
+<decoder name="CaddyFields">
+  <parent>Caddy</parent>
+  <type>web-log</type>
+  <!--
+  <regex type="pcre2">"user_id":"(.*)","duration":(\d+\.\d*),"size":(\d*),"status":(\d*)</regex>
+  -->
+  <regex>"user_id":"(\.*)","duration":(\d+.\d*),"size":(\d*),"status":(\d*)</regex>
+  <order>srcuser, duration, size, id</order>
+</decoder>
+
+<decoder name="CaddyFields">
+  <parent>Caddy</parent>
+  <type>web-log</type>
+  <regex>"User-Agent":["(\.*)"]</regex>
+  <order>user_agent</order>
+</decoder>
+
+<decoder name="CaddyFields">
+  <parent>Caddy</parent>
+  <type>web-log</type>
+  <regex>"Referer":["(\.*)"],</regex>
+  <order>referer</order>
+</decoder>
